@@ -1,0 +1,6 @@
+*.MOV
+*.mp4
+*.avi
+*.wmv
+frames.pkl
+motion_vectors.pkl
