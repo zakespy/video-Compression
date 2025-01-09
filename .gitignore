@@ -3,4 +3,4 @@
 *.avi
 *.wmv
 frames.pkl
-motion_vectors.pkl
+motion_vector.pkl
