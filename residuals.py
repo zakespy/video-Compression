@@ -8,7 +8,7 @@ BLOCK_SIZE = 16
 # NO_OF_WORKERS = os.cpu_count()
 NO_OF_WORKERS = 2
 SCALE_FACTOR = 2
-frameType = getFrametype("sample.mp4")
+# frameType = getFrametype("sample.mp4")
 # frames, scaled_up_motionVector = vector_motion_extractor('sample.mp4')
 
 
@@ -21,8 +21,7 @@ with open('frames.pkl', 'rb') as file:
     frames = pickle.load(file)
 
 
-residuals = []
-predicted_frames = []
+
 
 
 def prediction(prev_frame, motionVector, frameType):
@@ -68,14 +67,6 @@ def prediction(prev_frame, motionVector, frameType):
     
     return newFrame
     
-
-# print(len(frames))
-# print(frames[0].shape)
-# print(len(scaled_up_motionVector[0]))
-# print(len(scaled_up_motionVector))
-
-
-# import numpy as np
 
 def predict_frame(ref_frame, motion_vectors,frameType):
     """
@@ -133,33 +124,44 @@ def predict_frame(ref_frame, motion_vectors,frameType):
     return predicted_frame
 
 
+def residuals_extractor(frames, scaled_up_motionVector, frameType):
+
+    residuals = []
+    predicted_frames = []
+
+    residuals.append(np.zeros(frames[0].shape))
+    predicted_frames.append(frames[0])
+
+    for i in range(1, len(frames)):
+
+        # fr = predict_frame(predicted_frames[i-1], scaled_up_motionVector[i-1],frameType[i])
+        fr = prediction(predicted_frames[i-1], scaled_up_motionVector[i-1],frameType[i])
+
+        if(fr is None):
+            residuals.append(frames[i])
+            predicted_frames.append(frames[i])
+        else:
+            residuals.append(frames[i] - fr)
+            # residuals.append(fr-frames[i-1])
+            predicted_frames.append(fr)
 
 
-residuals.append(np.zeros(frames[0].shape))
-predicted_frames.append(frames[0])
+    diffFrames = []    
+    for i in range(0,len(frames)):
+        diffFrames.append(predicted_frames[i] + residuals[i])
+    
+    return residuals, predicted_frames, diffFrames
+    
+def interFramePredictor():
+    pass 
 
-for i in range(1, len(frames)):
-    
-    # fr = predict_frame(predicted_frames[i-1], scaled_up_motionVector[i-1],frameType[i])
-    fr = prediction(predicted_frames[i-1], scaled_up_motionVector[i-1],frameType[i])
-    
-    if(fr is None):
-        residuals.append(frames[i])
-        predicted_frames.append(frames[i])
-    else:
-        residuals.append(fr-frames[i-1])
-        predicted_frames.append(fr)
-    
-print(len(frames))
-print(len(residuals))
-print(len(predicted_frames))
+if __name__ == "__main__":
+    # frames, scaled_up_motionVector = vector_motion_extractor('sample.mp4')
+    frameType = getFrametype("sample.mp4")
+    residuals, predicted_frames, diffFrames = residuals_extractor(frames, scaled_up_motionVector, frameType)
+    displayFrames(frames)
+    displayFrames(predicted_frames)
+    # displayFrames(residuals)
+    displayFrames(diffFrames)
 
-diffFrames = []    
-for i in range(0,len(frames)):
-    diffFrames.append(predicted_frames[i] - residuals[i])
-    
-    
-displayFrames(frames)
-displayFrames(predicted_frames)
-# displayFrames(residuals)
-displayFrames(diffFrames)
+    __all__ = [ 'residuals_extractor' ,'prediction','predict_frame']
