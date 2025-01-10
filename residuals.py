@@ -1,4 +1,4 @@
-from compression_blockMatching import *
+from motionVector_blockMatching import *
 import numpy as np
 import subprocess
 import pickle
@@ -150,10 +150,13 @@ def residuals_extractor(frames, scaled_up_motionVector, frameType):
     for i in range(0,len(frames)):
         diffFrames.append(predicted_frames[i] + residuals[i])
     
+    # residual can be calculated by two approach 
+    # 1. residual = actual frame - predicted_frame. Then we need to add predicted_frame to residual to get actual frame during decompression
+    # 2. residual = predicted_frame - actual frame. Then we need to subtract predicted_frame from residual to get actual frame during decompression
+    
     return residuals, predicted_frames, diffFrames
     
-def interFramePredictor():
-    pass 
+    
 
 if __name__ == "__main__":
     # frames, scaled_up_motionVector = vector_motion_extractor('sample.mp4')
@@ -163,5 +166,6 @@ if __name__ == "__main__":
     displayFrames(predicted_frames)
     # displayFrames(residuals)
     displayFrames(diffFrames)
-
+    
+    
     __all__ = [ 'residuals_extractor' ,'prediction','predict_frame']
