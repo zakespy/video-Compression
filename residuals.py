@@ -29,18 +29,42 @@ def prediction(prev_frame, motionVector, frameType):
     
     if(frameType == "I"):
         return None
-    newFrame = prev_frame.copy()
+    newFrame = np.zeros(prev_frame.shape)
+    # newFrame = prev_frame.copy()
     
     height,width = prev_frame.shape
     # print(prev_frame.shape)
-
+    index = 0
     for i in range(0, height,BLOCK_SIZE):
         for j in range(0, width,BLOCK_SIZE):
             # print(motionVector[i])
-            mov = motionVector[i*BLOCK_SIZE + j+1]
+            # MVWidth = width//BLOCK_SIZE
+            # mov = motionVector[i*MVWidth + j]
+            
+            # mvi = (index // (width // BLOCK_SIZE)) * BLOCK_SIZE + BLOCK_SIZE // 2
+            # mvj = (index % (width // BLOCK_SIZE)) * BLOCK_SIZE + BLOCK_SIZE // 2
+            
+            MVWidth = prev_frame.shape[1] // BLOCK_SIZE
+            index = (i // BLOCK_SIZE) * MVWidth + (j // BLOCK_SIZE)
+            mvi,mvj = motionVector[index]
             # print(mov)
             # ymov = BLOCK_SIZE*motionVector[i][j][1]
-            newFrame[i+mov[0]:i+BLOCK_SIZE +mov[0] , j+mov[1]:j+BLOCK_SIZE+mov[1]] = prev_frame[i:i+BLOCK_SIZE,j:j+BLOCK_SIZE] 
+            
+            # newFrame[i+mov[0]:i+BLOCK_SIZE +mov[0] , j+mov[1]:j+BLOCK_SIZE+mov[1]] = prev_frame[i:i+BLOCK_SIZE,j:j+BLOCK_SIZE]
+
+            block = prev_frame[i:i+BLOCK_SIZE,j:j+BLOCK_SIZE]
+            start_x = i+mvi
+            start_y = j+mvj
+            end_x = i+BLOCK_SIZE +mvi
+            end_y = j+BLOCK_SIZE+mvj
+            
+            if (start_x < 0 or start_y < 0  or end_x > height or end_y > width):
+                continue
+            
+            newFrame[start_x:end_x , start_y:end_y] = block
+            
+        index += 1    
+    
     
     return newFrame
     
@@ -50,17 +74,92 @@ def prediction(prev_frame, motionVector, frameType):
 # print(len(scaled_up_motionVector[0]))
 # print(len(scaled_up_motionVector))
 
+
+# import numpy as np
+
+def predict_frame(ref_frame, motion_vectors,frameType):
+    """
+    Predict a frame based on motion vectors and a reference I-frame.
+
+    Args:
+        ref_frame (ndarray): The reference frame (I-frame) as a 2D NumPy array.
+        motion_vectors (list): A list of tuples, where each tuple (dx, dy) is the motion vector for a block.
+        block_size (int): The size of each block (e.g., 16 for 16x16 blocks).
+
+    Returns:
+        ndarray: The predicted frame as a 2D NumPy array.
+    """
+    
+    if(frameType == "I"):
+        return ref_frame
+    
+    block_size = BLOCK_SIZE
+    height, width = ref_frame.shape
+    predicted_frame = np.zeros_like(ref_frame)
+
+    vector_idx = 0
+    for i in range(0, height, block_size):
+        for j in range(0, width, block_size):
+            # Ensure the motion vector index is valid
+            if vector_idx >= len(motion_vectors):
+                raise ValueError("Motion vector list is smaller than expected for the given frame size.")
+
+            # Get the motion vector for the current block
+            dx, dy = motion_vectors[vector_idx]
+
+            # Compute the top-left corner of the corresponding block in the reference frame
+            ref_x = i + dx
+            ref_y = j + dy
+
+            if ref_x < 0 or ref_y < 0 or ref_x + block_size > height or ref_y + block_size > width:
+                continue
+                # raise ValueError("Invalid motion vector ({}, {}) for block at ({}, {})".format(dx, dy, i, j))
+
+            # Extract the block from the reference frame and handle boundary cases
+            ref_block = ref_frame[
+                max(0, ref_x):min(height, ref_x + block_size),
+                max(0, ref_y):min(width, ref_y + block_size)
+            ]
+
+            # Place the block in the predicted frame (same location as the current block)
+            predicted_frame[
+                i:min(i + block_size, height),
+                j:min(j + block_size, width)
+            ] = ref_block
+
+            # Increment the motion vector index
+            vector_idx += 1
+
+    return predicted_frame
+
+
+
+
+residuals.append(np.zeros(frames[0].shape))
+predicted_frames.append(frames[0])
+
 for i in range(1, len(frames)):
-    extra  = len(scaled_up_motionVector[i]) - (frames[i].shape[0]*frames[i].shape[1])//(BLOCK_SIZE**2)
-    scaled_up_motionVector[i] = scaled_up_motionVector[i][:-(extra)]
-    print((frames[i].shape[0]*frames[i].shape[1])//(BLOCK_SIZE**2))
-    print(len(scaled_up_motionVector[i]))
-    fr = prediction(frames[i-1], scaled_up_motionVector[i],frameType[i])
+    
+    # fr = predict_frame(predicted_frames[i-1], scaled_up_motionVector[i-1],frameType[i])
+    fr = prediction(predicted_frames[i-1], scaled_up_motionVector[i-1],frameType[i])
+    
     if(fr is None):
         residuals.append(frames[i])
         predicted_frames.append(frames[i])
     else:
-        residuals.append(fr-frames[i])
+        residuals.append(fr-frames[i-1])
         predicted_frames.append(fr)
-        
+    
+print(len(frames))
+print(len(residuals))
+print(len(predicted_frames))
+
+diffFrames = []    
+for i in range(0,len(frames)):
+    diffFrames.append(predicted_frames[i] - residuals[i])
+    
+    
+displayFrames(frames)
 displayFrames(predicted_frames)
+# displayFrames(residuals)
+displayFrames(diffFrames)

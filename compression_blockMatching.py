@@ -160,6 +160,7 @@ def blockMatchingWorker(args):
     motionVector = []
     
     for i in range(start_row,end_row,blocksize):
+        # rowMotionVector = []
         for j in range(0,width,blocksize):
             block = currFrame[i:i+blocksize,j:j+blocksize]
             
@@ -179,6 +180,8 @@ def blockMatchingWorker(args):
                         bestMatch = (ref_x-i,ref_y-j)
             
             motionVector.append(bestMatch)
+            # rowMotionVector.append(bestMatch)
+        # motionVector.append(rowMotionVector)
     return motionVector
     
 
