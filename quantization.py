@@ -1,6 +1,7 @@
 import pandas as pd 
 import numpy as np
 import pickle
+import skimage.feature
 from scipy.fft import dct
 from scipy.fft import idct
 from residuals import *
@@ -30,6 +31,31 @@ QUANTIZATION_MATRIX = np.array([[16,11,10,16,24,40,51,61],
 #     99,  99,  99,  99,  99,  99,  99,  99,],[
 #     99,  99,  99,  99,  99,  99,  99,  99]])
 
+
+def scalingFactor( frame):
+    height,width = frame.shape
+    for i in range( 0,height,QUANTI_BLOCK_SIZE):
+        for j in range ( 0,width,QUANTI_BLOCK_SIZE):
+            block = frame[i:i+QUANTI_BLOCK_SIZE,j:j+QUANTI_BLOCK_SIZE]
+            
+            # DCT_block = dct(block,type=2)
+            
+            # variance
+            variance = np.sum(np.square(block-np.mean(block)))/(BLOCK_SIZE**2)
+            
+            # edges Density
+            edgesDen = len(skimage.feature.canny(image=block))
+            
+            # Entropy 
+            marg =np.histogramdd(np.ravel(block),bins=256 )/(BLOCK_SIZE**2)
+            marg  = list(filter(lambda p:p>0,np.ravel(marg)))
+            entropy = -np.sum(np.multiply(marg, np.log2(marg)))
+            
+            # energy ratio
+            
+            
+            
+            
 
 def quantization(Iframe):
     
@@ -67,4 +93,11 @@ displayFrames(Iframes)
 displayFrames(compressedIframes)
 displayFrames(decompressedIframes)
 
-#  Pending will be done later after implementation of video compression and decompression using quantization 
+print("original first")
+print(Iframes[0])
+
+print("after compression")
+print(compressedIframes[0])
+
+print("after decompression ")
+print(decompressedIframes[0])
