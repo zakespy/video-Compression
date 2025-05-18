@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 import subprocess
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from scipy.ndimage import convolve
@@ -275,7 +277,7 @@ def vector_motion_extractor(videoFileName):
 
 if __name__ == "__main__":
     # frames, scaled_up_motionVector =  vector_motion_extractor('sample.mp4')
-    frames, motionVector =  vector_motion_extractor('sample.mp4')
+    frames, motionVector =  vector_motion_extractor('SampleVideo.mp4')
     # displayFrames(frames)
     # displayFrames(absFrame)
     
@@ -286,7 +288,7 @@ if __name__ == "__main__":
     # Serialize and write the data to the file
         pickle.dump(frames, file)
     
-    displayFlow(frames, motionVector)
+    # displayFlow(frames, motionVector)
     # display_upscaled_flow(frames, scaled_up_motionVector)
     
     __all__ = [ 'vector_motion_extractor' ,'displayFlow','display_upscaled_flow','getFrametype','displayFrames','BLOCK_SIZE','SCALE_FACTOR','NO_OF_WORKERS']

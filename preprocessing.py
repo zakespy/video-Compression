@@ -5,7 +5,7 @@ import numpy as np
 
 motionVectorWindow = 5
 
-video = cv2.VideoCapture('SampleVideo_1280x720_1mb.mp4')
+video = cv2.VideoCapture('SampleVideo.mp4')
 success, frame = video.read()
 
 if not success:

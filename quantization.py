@@ -12,7 +12,7 @@ with open('frames.pkl', 'rb') as file:
     # Load the data from the file
     frames = pickle.load(file)
     
-frameType = getFrametype("sample.mp4")
+frameType = getFrametype("SampleVideo.mp4")
 QUANTI_BLOCK_SIZE = 8
 QUANTIZATION_MATRIX = np.array([[16,11,10,16,24,40,51,61],
                                 [12,12,14,19,26,58,60,55],

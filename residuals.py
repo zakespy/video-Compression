@@ -131,10 +131,11 @@ def residuals_extractor(frames, scaled_up_motionVector, frameType):
 
     residuals.append(np.zeros(frames[0].shape))
     predicted_frames.append(frames[0])
-
+    print(len(frames))
     for i in range(1, len(frames)):
 
         # fr = predict_frame(predicted_frames[i-1], scaled_up_motionVector[i-1],frameType[i])
+        print(i)
         fr = prediction(predicted_frames[i-1], scaled_up_motionVector[i-1],frameType[i])
 
         if(fr is None):
@@ -160,7 +161,7 @@ def residuals_extractor(frames, scaled_up_motionVector, frameType):
 
 if __name__ == "__main__":
     # frames, scaled_up_motionVector = vector_motion_extractor('sample.mp4')
-    frameType = getFrametype("sample.mp4")
+    frameType = getFrametype("SampleVideo.mp4")
     residuals, predicted_frames, diffFrames = residuals_extractor(frames, scaled_up_motionVector, frameType)
     displayFrames(frames)
     displayFrames(predicted_frames)
